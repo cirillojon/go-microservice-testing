@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	httptransport "github.com/go-kit/kit/transport/http"
 )
 
 func TestCalculateHandler(t *testing.T) {
 	svc := CalculationService{}
-	httptransport.NewServer(makeCalculationEndpoint(svc), decodeCalculationRequest, encodeResponse)
+	handler := httptransport.NewServer(makeCalculationEndpoint(svc), decodeCalculationRequest, encodeResponse)
 
 	tests := []struct {
 		a, b     int
