@@ -34,7 +34,7 @@ In case of an error (like division by zero or invalid operation), the service re
 
 go run calculater.go (requires .env values to be set)
 
-**Test via Invoke-Request**
+**Test via Invoke-WebRequest**
 
 Invoke-WebRequest -Uri http://localhost:8080/calculate -Method POST -ContentType "application/json" -Body '{"a":5,"b":3,"op":"+"}'
 
