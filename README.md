@@ -48,8 +48,8 @@ go test (use -v for verbose output)
 **How to Build Docker Image:**
 docker build -t cirillojon/calculation-service .
 
-# How to Run Docker Image:
+## How to Run Docker Image:
 docker run -e MONGO_USER=username -e MONGO_PASSWORD=password -e MONGO_DB_NAME=database -p localPort:8080 cirillojon/calculation-service
 
-# Note
+## Note
 Remember to use the corresponding escape character for special characters in password 
