@@ -9,6 +9,7 @@ The service also logs each operation performed to a MongoDB Atlas database.
 1. **Go:** 
 2. **MongoDB:**
 3. **Go-Kit:** 
+4. **Docker:**
 
 ## Code Functionality
 
@@ -23,6 +24,8 @@ The service exposes a single HTTP POST endpoint at `/calculate` which accepts JS
 `
 
 Where `op` is one of the following strings: "+", "-", "*", "/".
+
+Example: `{"a":5,"b":3,"op":"+"}`
 
 Once the request is processed and the operation is performed, it is logged to a MongoDB Atlas database.
 
@@ -41,3 +44,12 @@ Invoke-WebRequest -Uri http://localhost:8080/calculate -Method POST -ContentType
 **How to Test using test file:**
 
 go test (use -v for verbose output)
+
+**How to Build Docker Image:**
+docker build -t cirillojon/calculation-service .
+
+# How to Run Docker Image:
+docker run -e MONGO_USER=username -e MONGO_PASSWORD=password -e MONGO_DB_NAME=database -p localPort:8080 cirillojon/calculation-service
+
+# note
+Remember to use the corresponding escape character for special characters in password 
