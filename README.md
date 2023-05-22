@@ -31,10 +31,13 @@ In case of an error (like division by zero or invalid operation), the service re
 ## How to Run and Test
 
 **How to Run:**
+
 go run calculater.go (requires .env values to be set)
 
 **Test via Invoke-Request**
+
 Invoke-WebRequest -Uri http://localhost:8080/calculate -Method POST -ContentType "application/json" -Body '{"a":5,"b":3,"op":"+"}'
 
 **How to Test using test file:**
+
 go test (use -v for verbose output)
