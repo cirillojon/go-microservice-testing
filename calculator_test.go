@@ -1,117 +1,86 @@
 package main
 
+// To use: go test -v
+
 import (
-	"bytes"
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
-	httptransport "github.com/go-kit/kit/transport/http"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func TestCalculateHandler(t *testing.T) {
-	// Create a MongoDB client for testing
-	client, err := createTestMongoClient()
-	if err != nil {
-		t.Fatal(err)
+// MockMongoRepository is a struct that implements the DatabaseRepository interface, used for testing
+type MockMongoRepository struct{}
+
+// InsertOne is a method of MockMongoRepository that is required by the DatabaseRepository interface. This mock implementation doesn't do anything.
+func (m MockMongoRepository) InsertOne(ctx context.Context, document interface{}) (*mongo.InsertOneResult, error) {
+	return nil, nil
+}
+
+// TestCalculate is a function that tests the Calculate method of the CalculationService.
+// It uses different test cases with different operations and checks if the output matches the expected results.
+func TestCalculate(t *testing.T) {
+	// Creates a CalculationService with the mock repository for testing
+	calc := CalculationService{
+		dbRepo: MockMongoRepository{},
 	}
 
-	// Cleanup the test client at the end
-	defer func() {
-		if err := client.Disconnect(context.Background()); err != nil {
-			t.Fatal(err)
-		}
-	}()
-
-	svc := CalculationService{
-		client: client,
-	}
-	handler := httptransport.NewServer(makeCalculationEndpoint(svc), decodeCalculationRequest, encodeResponse)
-
-	tests := []struct {
-		a, b     int
-		op       string
-		expected calculationResponse
+	// Cases to test, each with a name, inputs a and b, operation, expected result and error
+	cases := []struct {
+		name   string
+		a      int
+		b      int
+		op     string
+		expect int
+		err    error
 	}{
-		{1, 2, "+", calculationResponse{V: 3}},
-		{5, 3, "-", calculationResponse{V: 2}},
-		// More test cases...
+		// Each case tests a different operation or error condition
+		{name: "Addition", a: 1, b: 1, op: "+", expect: 2, err: nil},
+		{name: "Subtraction", a: 5, b: 3, op: "-", expect: 2, err: nil},
+		{name: "Multiplication", a: 2, b: 2, op: "*", expect: 4, err: nil},
+		{name: "Division", a: 4, b: 2, op: "/", expect: 2, err: nil},
+		{name: "Division by zero", a: 4, b: 0, op: "/", expect: 0, err: errors.New("cannot divide by zero")},
+		{name: "Invalid operation", a: 4, b: 2, op: "$", expect: 0, err: errors.New("invalid operation")},
 	}
 
-	for _, tt := range tests {
-		// Create an HTTP request with the input for this test case
-		input := calculationRequest{A: tt.a, B: tt.b, Op: tt.op}
-		requestBody, _ := json.Marshal(input)
-		req := httptest.NewRequest("POST", "/calculate", bytes.NewBuffer(requestBody))
-
-		// Use httptest to record the HTTP response
-		w := httptest.NewRecorder()
-
-		// Send the HTTP request to our handler
-		handler.ServeHTTP(w, req)
-
-		// Check that the HTTP response status is 200 OK
-		if status := w.Code; status != http.StatusOK {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusOK)
-		}
-
-		// Check that the HTTP response body is correct
-		var response calculationResponse
-		json.NewDecoder(w.Body).Decode(&response)
-		if response != tt.expected {
-			t.Errorf("handler returned unexpected body: got %v want %v",
-				response, tt.expected)
-		}
-
-		// Check if the operation log is inserted into the MongoDB collection
-		collection := client.Database("your-database-name").Collection("your-collection-name")
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		var log OperationLog
-		err := collection.FindOne(ctx, OperationLog{A: tt.a, B: tt.b, Op: tt.op}).Decode(&log)
-		if err != nil {
-			t.Errorf("failed to find operation log in MongoDB: %v", err)
-		}
+	for _, tt := range cases {
+		// Runs each case as a subtest
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := calc.Calculate(context.Background(), tt.a, tt.b, tt.op)
+			// Checks if the result and error match the expected result and error
+			if res != tt.expect || (err != nil && err.Error() != tt.err.Error()) {
+				t.Errorf("Expected %v and error %v, but got %v and error %v", tt.expect, tt.err, res, err)
+			}
+		})
 	}
 }
 
-func createTestMongoClient() (*mongo.Client, error) {
-	// Load environment variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		return nil, fmt.Errorf("Error loading .env file: %w", err)
+// TestLogOperation is a function that tests the LogOperation method of the CalculationService.
+// It checks if the operation is logged correctly without any errors.
+func TestLogOperation(t *testing.T) {
+	// Creates a CalculationService with the mock repository for testing
+	calc := CalculationService{
+		dbRepo: MockMongoRepository{},
 	}
 
-	mongoUser := os.Getenv("MONGO_USER")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	mongoDbName := os.Getenv("MONGO_DB_NAME")
-
-	// Set client options
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb+srv://%s:%s@cluster0.vebhmxj.mongodb.net/%s?retryWrites=true&w=majority", mongoUser, mongoPassword, mongoDbName))
-
-	// Connect to MongoDB
-	client, err := mongo.Connect(context.Background(), clientOptions)
-
-	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to MongoDB: %w", err)
+	// Defines an operation to log
+	op := OperationLog{
+		A:     5,
+		B:     3,
+		Op:    "+",
+		Value: 8,
+		Time:  time.Now(),
 	}
 
-	// Check the connection
-	err = client.Ping(context.Background(), nil)
+	err := calc.LogOperation(context.Background(), op)
 
+	// Checks if the operation was logged successfully
 	if err != nil {
-		return nil, fmt.Errorf("Failed to ping MongoDB: %w", err)
+		t.Errorf("Unexpected error: %v", err)
+	} else {
+		fmt.Println("LogOperation passed successfully")
 	}
-
-	return client, nil
 }
