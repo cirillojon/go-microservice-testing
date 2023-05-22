@@ -200,6 +200,31 @@ func main() {
 
 // connectMongoDB connects to MongoDB and returns a client
 func connectMongoDB() (*mongo.Client, error) {
+	// Check if the environment variables are set
+	if mongoUser := os.Getenv("MONGO_USER"); mongoUser != "" {
+		mongoPassword := os.Getenv("MONGO_PASSWORD")
+		mongoDbName := os.Getenv("MONGO_DB_NAME")
+
+		// Set client options
+		clientOptions := options.Client().ApplyURI(
+			fmt.Sprintf("mongodb+srv://%s:%s@cluster0.vebhmxj.mongodb.net/%s?retryWrites=true&w=majority", mongoUser, mongoPassword, mongoDbName),
+		).SetReadPreference(readpref.Primary())
+
+		// Connect to MongoDB
+		client, err := mongo.Connect(context.Background(), clientOptions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+		}
+
+		// Check the connection
+		err = client.Ping(context.Background(), nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+		}
+
+		fmt.Println("Connected to MongoDB!")
+		return client, nil
+	}
 
 	// Load environment variables from .env file
 	err := godotenv.Load()
@@ -218,14 +243,12 @@ func connectMongoDB() (*mongo.Client, error) {
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.Background(), clientOptions)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 
 	// Check the connection
 	err = client.Ping(context.Background(), nil)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
