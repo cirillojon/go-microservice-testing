@@ -14,13 +14,13 @@ The service also logs each operation performed to a MongoDB Atlas database.
 
 The service exposes a single HTTP POST endpoint at `/calculate` which accepts JSON requests with the structure:
 
-\```json
+`json
 {
   "a": <number>,
   "b": <number>,
   "op": <operation>
 }
-\```
+`
 
 Where `op` is one of the following strings: "+", "-", "*", "/".
 
