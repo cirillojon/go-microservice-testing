@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-microservice-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: go-microservice
+  template:
+    metadata:
+      labels:
+        app: go-microservice
+    spec:
+      containers:
+      - name: go-microservice
+        image: cirillojon/calculation-service
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo_user
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo_password
+        - name: MONGO_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo_db_name
