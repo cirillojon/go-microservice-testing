@@ -19,3 +19,5 @@ kubectl get deployments
 kubectl get pods
 kubectl get services
 
+# kubernetes port forwarding
+kubectl port-forward service/calculation-service 8081:8080
