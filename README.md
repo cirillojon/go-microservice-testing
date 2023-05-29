@@ -6,10 +6,11 @@ The service also logs each operation performed to a MongoDB Atlas database.
 
 ## Tools Used
 
-1. **Go:** 
-2. **MongoDB:**
-3. **Go-Kit:** 
-4. **Docker:**
+1. **Go** 
+2. **MongoDB**
+3. **Go-Kit** 
+4. **Docker**
+5. **Kubernetes**
 
 ## Code Functionality
 
