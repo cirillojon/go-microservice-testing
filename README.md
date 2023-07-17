@@ -4,6 +4,10 @@ This service supports basic mathematical operations such as: addition, subtracti
 
 The service also logs each operation performed to a MongoDB Atlas database.
 
+The point of this project was to get introduced to using go and go-kit for building services, as well as how to incorporate technologies such as Docker and Kubernetes
+
+Obviously for an app of this size, Docker and Kubernetes are a little overkill :)
+
 ## Tools Used
 
 1. **Go** 
