@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"os/signal"
@@ -99,9 +100,21 @@ func (CalculationService) Calculate(ctx context.Context, a int, b int, op string
 			return 0, errors.New("cannot divide by zero")
 		}
 		return a / b, nil
+	case "^":
+		return int(math.Pow(float64(a), float64(b))), nil
 	default:
 		// Returns an error if the operation is not supported
 		return 0, errors.New("invalid operation")
+	}
+}
+
+// validateOperation validates the operation
+func validateOperation(op string) bool {
+	switch op {
+	case "+", "-", "*", "/", "^":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -111,6 +124,10 @@ func decodeCalculationRequest(_ context.Context, r *http.Request) (interface{}, 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		// Returns an error if the request cannot be decoded
 		return nil, err
+	}
+	if !validateOperation(request.Op) {
+		// Returns an error if the operation is not valid
+		return nil, errors.New("invalid operation")
 	}
 	return request, nil
 }

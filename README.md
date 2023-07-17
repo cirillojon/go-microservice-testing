@@ -1,20 +1,18 @@
 # Basic calculation service using Go
 
-The point of this project was to get introduced to using Go and Go-Kit for building services, as well as how to incorporate technologies such as Docker and Kubernetes
+This project serves as an introduction to the use of Go and Go-Kit for building services, and how to incorporate technologies such as Docker, MongoDB Atlas and Kubernetes.
 
-Obviously for a small stand-alone service like this, the use of Docker and Kubernetes is a little overkill :)
+While the use of Docker and Kubernetes might seem overkill for a small stand-alone service like this, it serves as an example of how these technologies can be used in a real-world service.
 
-This service supports basic mathematical operations such as: addition, subtraction, multiplication, and division. 
+The service supports basic mathematical operations such as: addition, subtraction, multiplication, division, and exponentiation.
 
-The service also logs each operation performed to a MongoDB Atlas database.
-
-
+Each operation performed is logged to a MongoDB Atlas database.
 
 ## Tools Used
 
-1. **Go** 
+1. **Go**
 2. **MongoDB Atlas**
-3. **Go-Kit** 
+3. **Go-Kit**
 4. **Docker**
 5. **Kubernetes**
 
@@ -30,7 +28,7 @@ The service exposes a single HTTP POST endpoint at `/calculate` which accepts JS
 }
 `
 
-Where `op` is one of the following strings: "+", "-", "*", "/".
+Where `op` is one of the following strings: "+", "-", "*", "/", "^".
 
 Example: `{"a":5,"b":3,"op":"+"}`
 
